@@ -2,7 +2,7 @@
 
 In Progress 🚀
 
-NexTrade is a seller-to-buyer matching platform that connects the right products with the right businesses.
+NexTrade is a product recommendation system that connects the right products with the right customers.
 
 ## Project Phases
 
