@@ -7,9 +7,9 @@ NexTrade is a product recommendation system that connects the right products wit
 ## Project Phases
 
 1. Data Cleaning
-2. Data Normalization
-3. Categorizing similar products using TF-IDF + Clustering (K-Means or DBSCAN)
-4. Data Aggregation
-5. Buyer Clustering
-6. Seller Clustering
-7. Recommendation Algorithm
+2. Popularity-Based Filtering
+3. Content-Based Filtering
+4. Collaborative Filtering
+5. Hybrid Recommendation (Popularity, Content, and Collaborative)
+6. Evaluation
+7. Report
