@@ -18,10 +18,26 @@ NexTrade is a product recommendation system that connects the right products wit
 
 1. Clone the repository in your local system:
    ```
-   git clone https://github.com/nancy-kataria/NexTrade.git
+   git clone https://github.com/nancy-kataria/NexBuy.git
+   ```
+   ```
+   cd NexBuy
    ```
 
-2. Run the command:
+2. Create Virtual Environment:
+   ```
+   python -m venv .venv
+   ```
+3. Activate Venv
+   ```
+   source .venv/bin/activate
+   # On Windows: .venv\Scripts\activate
+   ```
+4. Install Requirements
+   ```
+   pip install -r requirements.txt
+   ```
+5. Run the app on streamlit
    ```
    streamlit run app.py
    ```
