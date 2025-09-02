@@ -1,53 +1,135 @@
-# NexBuy
+# NexBuy 🛒
 
-NexBuy is a multi strategy product recommendation system that connects the right products with the right customers.
+**NexBuy** is a multi-strategy product recommendation system that intelligently connects customers with the right products using state-of-the-art machine learning techniques.
 
-## Project Phases
+## 🎯 Features
 
-1. Data Cleaning
-2. Popularity-Based Filtering
-3. Content-Based Filtering
-4. Collaborative Filtering
-5. Hybrid Recommendation (Popularity, Content, and Collaborative)
-6. Evaluation
-7. Report
+- **Multi-Strategy Approach**: Combines Popular, Content-Based, Collaborative, and Hybrid recommendation algorithms
+- **Real-time Evaluation**: Built-in precision metrics and live evaluation dashboard
+- **Scalable Architecture**: Modular design for easy extension and maintenance
+- **Interactive Web App**: Streamlit-based interface for easy testing and demonstration
+- **Production Ready**: Comprehensive testing, logging, and configuration management
 
-## Built With
+## Recommendation Strategies
 
-* [![Python][Python]][Python-url]
-* [![Scikit-Learn][Scikit-learn]][scikit-learn-url]
-* [![Pandas][Pandas]][pandas-url]
-* [![NumPy][NumPy]][numpy-url]
-* [![Kaggle][Kaggle]][kaggle-url]
-* [![Streamlit][Streamlit]][streamlit-url]
+1. **Popular-Based Filtering**: Recommends globally popular products based on sales/quantity metrics
+2. **Content-Based Filtering**: Uses TF-IDF and cosine similarity on product features (name, category, sub-category)
+3. **Collaborative Filtering**: Item-item collaborative filtering based on user purchase patterns
+4. **Hybrid Approach**: Combines all three methods with configurable weights
 
-## How to Run
+## Data Pipeline
 
-1. Clone the repository in your local system:
-   ```
+1. **Data Loading**: Automatic download from Kaggle (Superstore dataset)
+2. **Preprocessing**: Data cleaning, feature engineering, and train/test splitting
+3. **Precomputations**: TF-IDF matrices, similarity matrices, and popularity metrics
+4. **Model Training**: Fit recommendation models on training data
+5. **Evaluation**: Precision@K metrics on test data
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.8 or higher
+- pip package manager
+- Git
+
+### Installation
+
+1. **Clone the repository**:
+   ```bash
    git clone https://github.com/nancy-kataria/NexBuy.git
-   ```
-   ```
    cd NexBuy
    ```
 
-2. Create Virtual Environment:
-   ```
+2. **Create and activate a virtual environment**:
+   ```bash
+   # Create virtual environment
    python -m venv .venv
-   ```
-3. Activate Venv
-   ```
+   
+   # Activate on macOS/Linux
    source .venv/bin/activate
-   # On Windows: .venv\Scripts\activate
+   
+   # Activate on Windows
+   .venv\Scripts\activate
    ```
-4. Install Requirements
-   ```
+
+3. **Install dependencies**:
+   ```bash
+   # Install in development mode
+   pip install -e .
+   
+   # Or install requirements directly
    pip install -r requirements.txt
    ```
-5. Run the app on streamlit
+
+4. **Set up environment variables** (optional):
+   ```bash
+   cp .env.template .env
+   # Edit .env with your specific configurations
    ```
-   streamlit run app.py
-   ```
+
+### 🏃‍♂️ Running the Application
+
+```bash
+streamlit run app.py
+```
+Open your browser and navigate to `http://localhost:8501`
+
+## 📊 Project Architecture
+
+### Project Structure
+
+```
+NexBuy/
+├── src/
+│   └── nexbuy/
+│       ├── data/           # Data preprocessing modules
+│       ├── models/         # Recommendation algorithms
+│       ├── utils/          # Helper functions and calculations
+│       └── evaluation/     # Model evaluation metrics
+├── tests/                  # Unit and integration tests
+├── notebooks/              # Jupyter notebooks for analysis
+├── config/                 # Configuration files
+├── app.py                  # Streamlit web application
+├── requirements.txt        # Python dependencies
+├── setup.py               # Package setup
+└── README.md              # Project documentation
+```
+
+## 🧪 Development
+
+### Running Tests
+
+```bash
+# Install development dependencies
+pip install -e ".[dev]"
+
+# Run all tests
+pytest
+
+# Run tests with coverage
+pytest --cov=src/nexbuy --cov-report=html
+
+# Run specific test file
+pytest tests/test_data_preprocessing.py
+```
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Superstore Dataset](https://www.kaggle.com/vivek468/superstore-dataset-final) from Kaggle
+- Scikit-learn for machine learning algorithms
+- Streamlit for the web interface
+- The open-source community for inspiration and tools
+
+## 📧 Contact
+
+**Nancy Kataria** - [GitHub Profile](https://github.com/nancy-kataria)
+
+Project Link: [https://github.com/nancy-kataria/NexBuy](https://github.com/nancy-kataria/NexBuy)
 
 
 [Python]: https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white
