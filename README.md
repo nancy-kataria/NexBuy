@@ -2,6 +2,42 @@
 
 **NexBuy** is a multi-strategy product recommendation system that intelligently connects customers with the right products using state-of-the-art machine learning techniques.
 
+## 🚀 Built With
+
+<p align="center">
+  <a href="https://www.python.org/" target="_blank">
+    <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
+  </a>
+  <a href="https://streamlit.io/" target="_blank">
+    <img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Streamlit"/>
+  </a>
+  <a href="https://pandas.pydata.org/" target="_blank">
+    <img src="https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white" alt="Pandas"/>
+  </a>
+  <a href="https://numpy.org/" target="_blank">
+    <img src="https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white" alt="NumPy"/>
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://scikit-learn.org/" target="_blank">
+    <img src="https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white" alt="Scikit-learn"/>
+  </a>
+  <a href="https://plotly.com/" target="_blank">
+    <img src="https://img.shields.io/badge/Plotly-3F4F75?style=for-the-badge&logo=plotly&logoColor=white" alt="Plotly"/>
+  </a>
+  <a href="https://www.kaggle.com/" target="_blank">
+    <img src="https://img.shields.io/badge/Kaggle-20BEFF?style=for-the-badge&logo=kaggle&logoColor=white" alt="Kaggle"/>
+  </a>
+  <a href="https://github.com/" target="_blank">
+    <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"/>
+  </a>
+</p>
+
+<p align="center">
+  <strong>Machine Learning • Web Applications • Data Science • Recommendation Systems</strong>
+</p>
+
 ## 🎯 Features
 
 - **Multi-Strategy Approach**: Combines Popular, Content-Based, Collaborative, and Hybrid recommendation algorithms
@@ -86,18 +122,35 @@ NexBuy/
 └── README.md              # Project documentation
 ```
 
+## 🛠️ Development
 
-[Python]: https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white
-[Scikit-learn]: https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white
-[Pandas]: https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white
-[NumPy]: https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white
-[Kaggle]: https://img.shields.io/badge/Kaggle-20BEFF?style=for-the-badge&logo=kaggle&logoColor=white
-[Streamlit]: https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white
+### Make Commands
 
+```bash
+# Run the application
+make run          # Start Streamlit app
 
-[scikit-learn-url]: https://scikit-learn.org/stable/
-[python-url]: https://www.python.org/
-[streamlit-url]: https://streamlit.io/
-[numpy-url]: https://numpy.org/
-[kaggle-url]: https://www.kaggle.com/
-[pandas-url]: https://pandas.pydata.org/
+# Development
+make install      # Install in development mode
+make test         # Run unit tests
+make format       # Format code with black
+make lint         # Check code quality with flake8
+make clean        # Clean build artifacts
+
+# Package management
+make requirements # Generate requirements.txt
+make build        # Build distribution packages
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest tests/
+
+# Run with coverage
+pytest --cov=src/nexbuy tests/
+
+# Or use make
+make test
+```
