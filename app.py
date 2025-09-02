@@ -6,19 +6,70 @@ import pandas as pd
 import sys
 import os
 
-# Add src to Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+# Add multiple path options for deployment flexibility
+current_dir = os.path.dirname(os.path.abspath(__file__))
+possible_paths = [
+    os.path.join(current_dir, 'src'),
+    current_dir,
+    os.path.join(current_dir, '..'),
+]
 
-# Import from NEW structure
-from nexbuy.data.preprocessing import train_df, test_df
-from nexbuy.models.popular import PopularRecommender
-from nexbuy.models.content_based import ContentBasedRecommender
-from nexbuy.models.collaborative import CollaborativeRecommender
-from nexbuy.models.hybrid import HybridRecommender
-from nexbuy.utils.precomputations import (
-    product_popularity, product_indices, cosine_sim, products, product_similarity_df
-)
-from nexbuy.evaluation.metrics import precision_at_k
+for path in possible_paths:
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
+# Try different import strategies
+import_success = False
+error_messages = []
+
+# Strategy 1: Direct import from src
+try:
+    from nexbuy.data.preprocessing import train_df, test_df
+    from nexbuy.models.popular import PopularRecommender
+    from nexbuy.models.content_based import ContentBasedRecommender
+    from nexbuy.models.collaborative import CollaborativeRecommender
+    from nexbuy.models.hybrid import HybridRecommender
+    from nexbuy.utils.precomputations import (
+        product_popularity, product_indices, cosine_sim, products, product_similarity_df
+    )
+    from nexbuy.evaluation.metrics import precision_at_k
+    import_success = True
+except ImportError as e:
+    error_messages.append(f"Strategy 1 failed: {e}")
+
+# Strategy 2: Import from src.nexbuy
+if not import_success:
+    try:
+        from src.nexbuy.data.preprocessing import train_df, test_df
+        from src.nexbuy.models.popular import PopularRecommender
+        from src.nexbuy.models.content_based import ContentBasedRecommender
+        from src.nexbuy.models.collaborative import CollaborativeRecommender
+        from src.nexbuy.models.hybrid import HybridRecommender
+        from src.nexbuy.utils.precomputations import (
+            product_popularity, product_indices, cosine_sim, products, product_similarity_df
+        )
+        from src.nexbuy.evaluation.metrics import precision_at_k
+        import_success = True
+    except ImportError as e:
+        error_messages.append(f"Strategy 2 failed: {e}")
+
+if not import_success:
+    st.error("❌ Failed to import NexBuy modules")
+    st.error("Deployment structure issues detected:")
+    for msg in error_messages:
+        st.error(msg)
+    
+    st.info("""
+    **Debugging Information:**
+    - Current working directory: {}
+    - Python path: {}
+    - Files in current directory: {}
+    """.format(
+        os.getcwd(),
+        sys.path[:3],
+        [f for f in os.listdir('.') if not f.startswith('.')]
+    ))
+    st.stop()
 
 st.set_page_config(page_title="NexBuy", layout="wide", initial_sidebar_state="expanded")
 st.title("🚀 NexBuy - Multi-Strategy Product Recommendation System")
@@ -64,23 +115,35 @@ if st.sidebar.button("Get Recommendations"):
         
         with col1:
             st.subheader("🏆 Popular Recommendations")
-            popular_recs = recommenders['popular'].recommend(customer_id, top_n)
-            st.dataframe(popular_recs, use_container_width=True)
+            try:
+                popular_recs = recommenders['popular'].recommend(customer_id, top_n)
+                st.dataframe(popular_recs, use_container_width=True)
+            except Exception as e:
+                st.error(f"Error getting popular recommendations: {e}")
             
             st.subheader("🤝 Collaborative Recommendations")
-            collab_recs = recommenders['collaborative'].recommend(customer_id, top_n)
-            st.dataframe(collab_recs, use_container_width=True)
+            try:
+                collab_recs = recommenders['collaborative'].recommend(customer_id, top_n)
+                st.dataframe(collab_recs, use_container_width=True)
+            except Exception as e:
+                st.error(f"Error getting collaborative recommendations: {e}")
         
         with col2:
             st.subheader("📄 Content-Based Recommendations")
-            content_recs = recommenders['content'].recommend(customer_id, top_n)
-            st.dataframe(content_recs, use_container_width=True)
+            try:
+                content_recs = recommenders['content'].recommend(customer_id, top_n)
+                st.dataframe(content_recs, use_container_width=True)
+            except Exception as e:
+                st.error(f"Error getting content-based recommendations: {e}")
             
             st.subheader("🚀 Hybrid Recommendations")
-            hybrid_recs = recommenders['hybrid'].recommend(customer_id, top_n)
-            st.dataframe(hybrid_recs, use_container_width=True)
+            try:
+                hybrid_recs = recommenders['hybrid'].recommend(customer_id, top_n)
+                st.dataframe(hybrid_recs, use_container_width=True)
+            except Exception as e:
+                st.error(f"Error getting hybrid recommendations: {e}")
 
-# --- New: Product ID based recommendations ---
+# --- Product ID based recommendations ---
 st.sidebar.markdown("---")
 st.sidebar.title("🧪 Try Recommendations by Product ID")
 product_id = st.sidebar.text_input("Product ID", value="FUR-BO-10001798")
@@ -133,58 +196,60 @@ k = st.slider("Select value of K for evaluation", 1, 10, 5)
 
 if st.button("🔥 Evaluate All Models"):
     with st.spinner("Running comprehensive evaluation on test set..."):
-        
-        # Create wrapper functions for evaluation
-        def recommend_popular_wrapper(customer_id, top_n=5):
-            return recommenders['popular'].recommend(customer_id, top_n)
-        
-        def recommend_content_wrapper(customer_id, top_n=5):
-            return recommenders['content'].recommend(customer_id, top_n)
-        
-        def recommend_collab_wrapper(customer_id, top_n=5):
-            return recommenders['collaborative'].recommend(customer_id, top_n)
-        
-        def recommend_hybrid_wrapper(customer_id, top_n=5):
-            return recommenders['hybrid'].recommend(customer_id, top_n)
-        
-        # Evaluate all methods
-        prec_pop = precision_at_k(recommend_popular_wrapper, test_df, k=k, method_name="Popular (New)")
-        prec_cont = precision_at_k(recommend_content_wrapper, test_df, k=k, method_name="Content-Based (New)")
-        prec_collab = precision_at_k(recommend_collab_wrapper, test_df, k=k, method_name="Collaborative (New)")
-        prec_hybrid = precision_at_k(recommend_hybrid_wrapper, test_df, k=k, method_name="Hybrid (New)")
-        
-        scores = {
-            '🏆 Popular': prec_pop,
-            '📄 Content-Based': prec_cont,
-            '🤝 Collaborative': prec_collab,
-            '🚀 Hybrid': prec_hybrid
-        }
-        
-        df = pd.DataFrame.from_dict(scores, orient='index', columns=[f'Precision@{k}'])
-        
-        st.success("✅ Evaluation completed!")
-        
-        # Show results in columns
-        col1, col2 = st.columns([1, 1])
-        
-        with col1:
-            st.subheader(f"📊 Precision@{k} Results")
-            st.table(df.style.format({f'Precision@{k}': '{:.4f}'}))
+        try:
+            # Create wrapper functions for evaluation
+            def recommend_popular_wrapper(customer_id, top_n=5):
+                return recommenders['popular'].recommend(customer_id, top_n)
             
-            # Highlight best performing model
-            best_model = df.idxmax()[0]
-            best_score = df.max()[0]
-            st.info(f"🥇 **Best Model**: {best_model} with Precision@{k} = {best_score:.4f}")
-        
-        with col2:
-            st.subheader("📈 Performance Comparison")
-            st.bar_chart(df)
+            def recommend_content_wrapper(customer_id, top_n=5):
+                return recommenders['content'].recommend(customer_id, top_n)
             
-            # Show model comparison
-            st.subheader("🔍 Algorithm Comparison")
-            comparison_df = pd.DataFrame({
-                'Algorithm': ['Popular', 'Content-Based', 'Collaborative', 'Hybrid'],
-                'Type': ['Popularity', 'Content Similarity', 'User Behavior', 'Combined'],
-                'Precision@5': [prec_pop, prec_cont, prec_collab, prec_hybrid]
-            })
-            st.dataframe(comparison_df, use_container_width=True)
+            def recommend_collab_wrapper(customer_id, top_n=5):
+                return recommenders['collaborative'].recommend(customer_id, top_n)
+            
+            def recommend_hybrid_wrapper(customer_id, top_n=5):
+                return recommenders['hybrid'].recommend(customer_id, top_n)
+            
+            # Evaluate all methods
+            prec_pop = precision_at_k(recommend_popular_wrapper, test_df, k=k, method_name="Popular (New)")
+            prec_cont = precision_at_k(recommend_content_wrapper, test_df, k=k, method_name="Content-Based (New)")
+            prec_collab = precision_at_k(recommend_collab_wrapper, test_df, k=k, method_name="Collaborative (New)")
+            prec_hybrid = precision_at_k(recommend_hybrid_wrapper, test_df, k=k, method_name="Hybrid (New)")
+            
+            scores = {
+                '🏆 Popular': prec_pop,
+                '📄 Content-Based': prec_cont,
+                '🤝 Collaborative': prec_collab,
+                '🚀 Hybrid': prec_hybrid
+            }
+            
+            df = pd.DataFrame.from_dict(scores, orient='index', columns=[f'Precision@{k}'])
+            
+            st.success("✅ Evaluation completed!")
+            
+            # Show results in columns
+            col1, col2 = st.columns([1, 1])
+            
+            with col1:
+                st.subheader(f"📊 Precision@{k} Results")
+                st.table(df.style.format({f'Precision@{k}': '{:.4f}'}))
+                
+                # Highlight best performing model
+                best_model = df.idxmax()[0]
+                best_score = df.max()[0]
+                st.info(f"🥇 **Best Model**: {best_model} with Precision@{k} = {best_score:.4f}")
+            
+            with col2:
+                st.subheader("📈 Performance Comparison")
+                st.bar_chart(df)
+                
+                # Show model comparison
+                st.subheader("🔍 Algorithm Comparison")
+                comparison_df = pd.DataFrame({
+                    'Algorithm': ['Popular', 'Content-Based', 'Collaborative', 'Hybrid'],
+                    'Type': ['Popularity', 'Content Similarity', 'User Behavior', 'Combined'],
+                    'Precision@5': [prec_pop, prec_cont, prec_collab, prec_hybrid]
+                })
+                st.dataframe(comparison_df, use_container_width=True)
+        except Exception as e:
+            st.error(f"❌ Error during evaluation: {e}")
