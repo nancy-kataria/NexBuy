@@ -10,14 +10,14 @@
 - **Interactive Web App**: Streamlit-based interface for easy testing and demonstration
 - **Production Ready**: Comprehensive testing, logging, and configuration management
 
-## Recommendation Strategies
+### Recommendation Strategies
 
 1. **Popular-Based Filtering**: Recommends globally popular products based on sales/quantity metrics
 2. **Content-Based Filtering**: Uses TF-IDF and cosine similarity on product features (name, category, sub-category)
 3. **Collaborative Filtering**: Item-item collaborative filtering based on user purchase patterns
 4. **Hybrid Approach**: Combines all three methods with configurable weights
 
-## Data Pipeline
+### Data Pipeline
 
 1. **Data Loading**: Automatic download from Kaggle (Superstore dataset)
 2. **Preprocessing**: Data cleaning, feature engineering, and train/test splitting
@@ -26,12 +26,6 @@
 5. **Evaluation**: Precision@K metrics on test data
 
 ## 🚀 Quick Start
-
-### Prerequisites
-
-- Python 3.8 or higher
-- pip package manager
-- Git
 
 ### Installation
 
@@ -55,10 +49,6 @@
 
 3. **Install dependencies**:
    ```bash
-   # Install in development mode
-   pip install -e .
-   
-   # Or install requirements directly
    pip install -r requirements.txt
    ```
 
@@ -95,41 +85,6 @@ NexBuy/
 ├── setup.py               # Package setup
 └── README.md              # Project documentation
 ```
-
-## 🧪 Development
-
-### Running Tests
-
-```bash
-# Install development dependencies
-pip install -e ".[dev]"
-
-# Run all tests
-pytest
-
-# Run tests with coverage
-pytest --cov=src/nexbuy --cov-report=html
-
-# Run specific test file
-pytest tests/test_data_preprocessing.py
-```
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- [Superstore Dataset](https://www.kaggle.com/vivek468/superstore-dataset-final) from Kaggle
-- Scikit-learn for machine learning algorithms
-- Streamlit for the web interface
-- The open-source community for inspiration and tools
-
-## 📧 Contact
-
-**Nancy Kataria** - [GitHub Profile](https://github.com/nancy-kataria)
-
-Project Link: [https://github.com/nancy-kataria/NexBuy](https://github.com/nancy-kataria/NexBuy)
 
 
 [Python]: https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white
