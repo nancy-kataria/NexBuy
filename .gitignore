@@ -151,7 +151,6 @@ ehthumbs.db
 Thumbs.db
 
 # Project specific
-data/
 *.csv
 *.pkl
 *.joblib
