@@ -1,4 +1,4 @@
-# NexBuy 🛒
+# NexBuy
 
 **NexBuy** is a multi-strategy product recommendation system that intelligently connects customers with the right products using state-of-the-art machine learning techniques.
 
