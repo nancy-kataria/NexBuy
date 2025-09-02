@@ -80,6 +80,53 @@ if st.sidebar.button("Get Recommendations"):
             hybrid_recs = recommenders['hybrid'].recommend(customer_id, top_n)
             st.dataframe(hybrid_recs, use_container_width=True)
 
+# --- New: Product ID based recommendations ---
+st.sidebar.markdown("---")
+st.sidebar.title("🧪 Try Recommendations by Product ID")
+product_id = st.sidebar.text_input("Product ID", value="FUR-BO-10001798")
+
+if st.sidebar.button("Get Similar Products"):
+    pid = product_id.strip()
+    if not pid:
+        st.warning("Please enter a valid Product ID.")
+    else:
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.subheader("📄 Content-Based: Similar Products")
+            # Content similarity via precomputed matrices
+            if pid in product_indices:
+                try:
+                    idx = product_indices[pid]
+                    # Get similarity scores and order
+                    sim_scores = list(enumerate(cosine_sim[idx]))
+                    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+                    top = [i for i, _ in sim_scores[1: top_n + 1]]  # exclude the item itself
+                    content_similar = products.iloc[top][['Product ID', 'Product Name', 'Category', 'Sub-Category']].copy()
+                    content_similar.insert(0, 'Source Product ID', pid)
+                    st.dataframe(content_similar, use_container_width=True)
+                except Exception as e:
+                    st.error(f"Content-based similarity unavailable: {e}")
+            else:
+                st.info("Product not found in content index. Try another Product ID.")
+
+        with col2:
+            st.subheader("🤝 Collaborative: Similar Products")
+            if 'product_similarity_df' in globals() and pid in product_similarity_df.columns:
+                try:
+                    scores = product_similarity_df[pid].drop(labels=[pid], errors='ignore').sort_values(ascending=False)
+                    top_ids = scores.head(top_n).index.tolist()
+                    collab_similar = product_popularity[product_popularity['Product ID'].isin(top_ids)][['Product ID', 'Product Name', 'Category', 'Sub-Category']].copy()
+                    # Preserve order according to similarity
+                    collab_similar['__order'] = collab_similar['Product ID'].apply(lambda x: top_ids.index(x) if x in top_ids else len(top_ids))
+                    collab_similar = collab_similar.sort_values('__order').drop(columns='__order')
+                    collab_similar.insert(0, 'Source Product ID', pid)
+                    st.dataframe(collab_similar, use_container_width=True)
+                except Exception as e:
+                    st.error(f"Collaborative similarity unavailable: {e}")
+            else:
+                st.info("Product not found in collaborative similarity data. Try another Product ID.")
+
 # Main evaluation interface
 st.subheader("📊 Model Evaluation")
 k = st.slider("Select value of K for evaluation", 1, 10, 5)
