@@ -1,196 +1,21 @@
-"""
-NexBuy Streamlit App using the NEW modular structure
-"""
 import streamlit as st
 import pandas as pd
 import sys
 import os
 
-# Add multiple path options for deployment flexibility
-current_dir = os.path.dirname(os.path.abspath(__file__))
-possible_paths = [
-    os.path.join(current_dir, 'src'),
-    current_dir,
-    os.path.join(current_dir, '..'),
-]
+# Add src to Python path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-for path in possible_paths:
-    if path not in sys.path:
-        sys.path.insert(0, path)
-
-# Try different import strategies
-import_success = False
-error_messages = []
-
-# Strategy 1: Direct import from src
-try:
-    from nexbuy.data.preprocessing import train_df, test_df
-    from nexbuy.models.popular import PopularRecommender
-    from nexbuy.models.content_based import ContentBasedRecommender
-    from nexbuy.models.collaborative import CollaborativeRecommender
-    from nexbuy.models.hybrid import HybridRecommender
-    from nexbuy.utils.precomputations import (
-        product_popularity, product_indices, cosine_sim, products, product_similarity_df
-    )
-    from nexbuy.evaluation.metrics import precision_at_k
-    import_success = True
-except ImportError as e:
-    error_messages.append(f"Strategy 1 failed: {e}")
-
-# Strategy 2: Import from src.nexbuy
-if not import_success:
-    try:
-        from src.nexbuy.data.preprocessing import train_df, test_df
-        from src.nexbuy.models.popular import PopularRecommender
-        from src.nexbuy.models.content_based import ContentBasedRecommender
-        from src.nexbuy.models.collaborative import CollaborativeRecommender
-        from src.nexbuy.models.hybrid import HybridRecommender
-        from src.nexbuy.utils.precomputations import (
-            product_popularity, product_indices, cosine_sim, products, product_similarity_df
-        )
-        from src.nexbuy.evaluation.metrics import precision_at_k
-        import_success = True
-    except ImportError as e:
-        error_messages.append(f"Strategy 2 failed: {e}")
-
-# Strategy 3: Import individual files directly for deployment
-if not import_success:
-    try:
-        import kagglehub
-        from sklearn.feature_extraction.text import TfidfVectorizer
-        from sklearn.metrics.pairwise import cosine_similarity
-        
-        # Load data directly
-        @st.cache_data
-        def load_deployment_data():
-            path = kagglehub.dataset_download("vivek468/superstore-dataset-final")
-            file_path = os.path.join(path, "Sample - Superstore.csv")
-            
-            # Try different encodings
-            for encoding in ['utf-8', 'latin-1', 'iso-8859-1', 'cp1252']:
-                try:
-                    data = pd.read_csv(file_path, encoding=encoding)
-                    break
-                except UnicodeDecodeError:
-                    continue
-            
-            # Keep necessary columns
-            columns_to_keep = [
-                'Order ID', 'Order Date', 'Ship Date', 'Customer ID', 
-                'Product ID', 'Product Name', 'Sales', 'Quantity', 
-                'Category', 'Sub-Category'
-            ]
-            superstore_data = data[columns_to_keep].copy()
-            superstore_data['Order Date'] = pd.to_datetime(superstore_data['Order Date'])
-            superstore_data['Ship Date'] = pd.to_datetime(superstore_data['Ship Date'])
-            superstore_data.dropna(subset=columns_to_keep, inplace=True)
-            
-            # Split data
-            sorted_data = superstore_data.sort_values('Order Date')
-            split_idx = int(0.8 * len(sorted_data))
-            train_df = sorted_data.iloc[:split_idx].copy()
-            test_df = sorted_data.iloc[split_idx:].copy()
-            
-            return train_df, test_df
-        
-        train_df, test_df = load_deployment_data()
-        
-        # Precomputations
-        @st.cache_data
-        def compute_deployment_data(_train_df):
-            # Product popularity
-            product_popularity = _train_df.groupby('Product ID').agg({
-                'Product Name': 'first', 'Category': 'first', 'Sub-Category': 'first',
-                'Quantity': 'sum', 'Sales': 'sum'
-            }).reset_index()
-            
-            # Content-based similarity
-            products = _train_df[['Product ID', 'Product Name', 'Category', 'Sub-Category']].drop_duplicates()
-            products['features'] = (
-                products['Product Name'].fillna('') + ' ' +
-                products['Category'].fillna('') + ' ' +
-                products['Sub-Category'].fillna('')
-            )
-            
-            tfidf = TfidfVectorizer(stop_words='english', max_features=5000)
-            tfidf_matrix = tfidf.fit_transform(products['features'])
-            cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
-            product_indices = pd.Series(products.index, index=products['Product ID']).to_dict()
-            
-            # Collaborative similarity
-            user_item_matrix = _train_df.pivot_table(
-                index='Customer ID', columns='Product ID', values='Quantity', fill_value=0
-            )
-            item_similarity = cosine_similarity(user_item_matrix.T)
-            product_similarity_df = pd.DataFrame(
-                item_similarity, index=user_item_matrix.columns, columns=user_item_matrix.columns
-            )
-            
-            return product_popularity, products, cosine_sim, product_indices, product_similarity_df
-        
-        product_popularity, products, cosine_sim, product_indices, product_similarity_df = compute_deployment_data(train_df)
-        
-        # Simple recommendation functions
-        def precision_at_k(recommend_func, test_df, k=5, method_name=""):
-            # Simplified precision calculation
-            return 0.15  # Placeholder for deployment
-        
-        # Fallback recommendation functions
-        class FallbackRecommender:
-            def __init__(self, name):
-                self.name = name
-            
-            def fit(self, *args, **kwargs):
-                # Dummy fit method for compatibility
-                return self
-            
-            def recommend(self, customer_id, top_n=5):
-                if self.name == 'popular':
-                    customer_purchases = train_df[train_df['Customer ID'] == customer_id]['Product ID'].unique()
-                    unseen_products = product_popularity[~product_popularity['Product ID'].isin(customer_purchases)]
-                    return unseen_products.sort_values('Quantity', ascending=False).head(top_n)[['Product ID', 'Product Name', 'Category', 'Sub-Category', 'Quantity']]
-                
-                elif self.name == 'content':
-                    customer_purchases = train_df[train_df['Customer ID'] == customer_id]
-                    if customer_purchases.empty:
-                        return pd.DataFrame()
-                    last_purchase = customer_purchases.sort_values('Order Date', ascending=False).iloc[0]
-                    last_product_id = last_purchase['Product ID']
-                    if last_product_id not in product_indices:
-                        return pd.DataFrame()
-                    idx = product_indices[last_product_id]
-                    sim_scores = list(enumerate(cosine_sim[idx]))
-                    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
-                    top_indices = [i for i, _ in sim_scores[1:top_n+1]]
-                    similar_products = products.iloc[top_indices]
-                    purchased_ids = customer_purchases['Product ID'].unique()
-                    similar_products = similar_products[~similar_products['Product ID'].isin(purchased_ids)]
-                    return similar_products[['Product ID', 'Product Name', 'Category', 'Sub-Category']].head(top_n)
-                
-                else:
-                    # Return popular items as fallback
-                    return product_popularity.head(top_n)[['Product ID', 'Product Name', 'Category', 'Sub-Category']]
-        
-        # Create fallback classes for deployment
-        PopularRecommender = lambda **kwargs: FallbackRecommender('popular')
-        ContentBasedRecommender = lambda **kwargs: FallbackRecommender('content')
-        CollaborativeRecommender = lambda **kwargs: FallbackRecommender('collaborative')
-        HybridRecommender = lambda **kwargs: FallbackRecommender('hybrid')
-        
-        import_success = True
-        st.info("Using deployment fallback - basic functionality available")
-        
-    except Exception as e:
-        st.error(f"Deployment fallback failed: {e}")
-        st.error("Unable to load the application. Please check the deployment configuration.")
-        st.stop()
-
-if not import_success:
-    st.error("Failed to import NexBuy modules")
-    st.error("Deployment structure issues detected:")
-    for msg in error_messages:
-        st.error(msg)
-    st.stop()
+# Import from NEW structure
+from nexbuy.data.preprocessing import train_df, test_df
+from nexbuy.models.popular import PopularRecommender
+from nexbuy.models.content_based import ContentBasedRecommender
+from nexbuy.models.collaborative import CollaborativeRecommender
+from nexbuy.models.hybrid import HybridRecommender
+from nexbuy.utils.precomputations import (
+    product_popularity, product_indices, cosine_sim, products, product_similarity_df
+)
+from nexbuy.evaluation.metrics import precision_at_k
 
 st.set_page_config(page_title="NexBuy", layout="wide", initial_sidebar_state="expanded")
 st.title("🚀 NexBuy - Multi-Strategy Product Recommendation System")
@@ -296,7 +121,7 @@ if st.sidebar.button("Get Similar Products"):
 
         with col2:
             st.subheader("🤝 Collaborative: Similar Products")
-            if 'product_similarity_df' in globals() and pid in product_similarity_df.columns:
+            if pid in product_similarity_df.columns:
                 try:
                     scores = product_similarity_df[pid].drop(labels=[pid], errors='ignore').sort_values(ascending=False)
                     top_ids = scores.head(top_n).index.tolist()
